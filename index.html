@@ -3,65 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إرسال ملفات - ناربوسا</title>
+    <title>إرسال سريع - ناربوسا</title>
     <style>
-        body { font-family: sans-serif; background: #0f172a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: #1e293b; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; width: 90%; max-width: 400px; }
-        .upload-btn { background: #38bdf8; color: #0f172a; padding: 15px 30px; border-radius: 12px; cursor: pointer; display: block; font-weight: bold; margin-top: 20px; }
-        #status { margin-top: 15px; font-size: 0.9em; color: #94a3b8; }
+        body { font-family: sans-serif; background: #0f172a; color: white; text-align: center; padding: 40px; }
+        .btn { background: #38bdf8; color: #0f172a; padding: 20px; border-radius: 15px; cursor: pointer; display: inline-block; font-weight: bold; width: 80%; }
+        #status { margin-top: 20px; padding: 10px; border-radius: 10px; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h2>إرسال سريع 📤</h2>
-        <p>اختر الصور أو المستندات لإرسالها للحاسوب</p>
-        <input type="file" id="filePicker" style="display:none" onchange="uploadFile()">
-        <label for="filePicker" class="upload-btn">اختر الملف الآن</label>
-        <div id="status">جاهز للإرسال...</div>
-    </div>
+    <h2>إرسال للملفات 📤</h2>
+    <input type="file" id="up" style="display:none" onchange="send()">
+    <label for="up" class="btn">اضغط هنا واختَر ملفاً</label>
+    <div id="status">جاهز...</div>
 
     <script>
-        // تأكد من صحة هذه البيانات تماماً
-        const token = '8056763508:AAENF8fdENyQqGmFcbmcd6xz6PeXGRe5qf4';
-        const chatId = '53822052';
-
-        async function uploadFile() {
-            const fileInput = document.getElementById('filePicker');
+        async function send() {
             const status = document.getElementById('status');
-            
+            const fileInput = document.getElementById('up');
             if (fileInput.files.length === 0) return;
 
-            const file = fileInput.files[0];
+            // توكن نظيف بدون أي مسافات
+            const token = '8056763508:AAENF8fdENyQqGmFcbmcd6xz6PeXGRe5qf4';
+            const chat_id = '53822052';
+
             const formData = new FormData();
-            formData.append('chat_id', chatId);
-            
-            // نستخدم sendDocument لأنه يستقبل كل أنواع الملفات والصور
-            formData.append('document', file);
+            formData.append('chat_id', chat_id);
+            formData.append('document', fileInput.files[0]);
 
             status.innerText = "⏳ جاري الرفع الآن...";
-            status.style.color = "#38bdf8";
+            status.style.background = "#1e293b";
 
             try {
-                const res = await fetch(`https://api.telegram.org/bot${token}/sendDocument`, {
+                const response = await fetch(`https://api.telegram.org/bot${token}/sendDocument`, {
                     method: 'POST',
                     body: formData
                 });
+                
+                const resData = await response.json();
 
-                const result = await res.json();
-
-                if (result.ok) {
-                    status.innerText = "✅ تم الإرسال بنجاح!";
-                    status.style.color = "#00ff41";
+                if (resData.ok) {
+                    status.innerText = "✅ نجح الإرسال! افحص الحاسوب الآن";
+                    status.style.background = "#064e3b";
                 } else {
-                    status.innerText = "❌ فشل: " + result.description;
-                    status.style.color = "#ef4444";
-                    console.log(result);
+                    // سيظهر لك هنا سبب الفشل الحقيقي من تليجرام
+                    status.innerText = "❌ فشل من السيرفر: " + resData.description;
+                    status.style.background = "#7f1d1d";
                 }
-            } catch (e) {
-                status.innerText = "❌ خطأ في الاتصال بالسيرفر";
-                status.style.color = "#ef4444";
+            } catch (err) {
+                status.innerText = "❌ خطأ اتصال: تأكد من الإنترنت";
+                status.style.background = "#7f1d1d";
             }
-            fileInput.value = "";
         }
     </script>
 </body>
